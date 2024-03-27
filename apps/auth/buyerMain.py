@@ -27,27 +27,27 @@ def generate_custom_id(prefix: str, n_digits: int) -> str:
 
 
 @router.post('/buyer/signup/', status_code=status.HTTP_201_CREATED)
-async def new_buyer ( file: UploadFile = (None) , db: Session = Depends(get_db)):
-  # check_email= db.query(Buyers).filter(Buyers.email == buyer.email).first()
-  # check_username= db.query(Buyers).filter(Buyers.username == buyer.username).first()
-  # if check_email : 
-  #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"Email already in use")
-  # if check_username : 
-  #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"Username is taken")
-  # hashed_password = hash(buyer.password)
-  # buyer.password = hashed_password
-  # custom_id = generate_custom_id("BU", 5)
-  # profile_picture = await profile_picture_upload(file)
-  # new_account = Buyers(buyer_id=custom_id, profile_picture=profile_picture, **buyer.dict())
-  # db.add(new_account)
-  # db.commit()
-  # db.refresh(new_account)
-  await account_purchased("Registration Successful", "olaniyanayoade999@gmail.com", {
-  "title": "Account Purchase Successful",
-  "name": "Ayoade",
+async def new_buyer ( buyer: BuyerIn= Depends(), file: UploadFile = (None) , db: Session = Depends(get_db)):
+  check_email= db.query(Buyers).filter(Buyers.email == buyer.email).first()
+  check_username= db.query(Buyers).filter(Buyers.username == buyer.username).first()
+  if check_email : 
+      raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"Email already in use")
+  if check_username : 
+      raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"Username is taken")
+  hashed_password = hash(buyer.password)
+  buyer.password = hashed_password
+  custom_id = generate_custom_id("BU", 5)
+  profile_picture = await profile_picture_upload(file)
+  new_account = Buyers(buyer_id=custom_id, profile_picture=profile_picture, **buyer.dict())
+  db.add(new_account)
+  db.commit()
+  db.refresh(new_account)
+  await account_purchased("Registration Successful", buyer.email, {
+  "title": "Sign up Successful",
+  "name": buyer.full_name,
   
 })
-  return {"success": "mail is sent"}
+  return new_account
 
 """
 To fetch all buyers
