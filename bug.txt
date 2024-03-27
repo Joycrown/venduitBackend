@@ -1,0 +1,1 @@
+delete a product with the product image
