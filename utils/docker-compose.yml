@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  pyramid:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: pyramid.settings
+      ENVIRONMENT: DEV 
+      # Additional environment variables specific to your application
+     
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: pyramid
+      POSTGRES_PASSWORD: Awesomejoy@001
+    ports:
+      - "5432:5432"

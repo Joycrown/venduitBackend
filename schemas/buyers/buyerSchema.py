@@ -5,12 +5,20 @@ from pydantic import BaseModel, EmailStr
 
 
 
+class  UserSignUpIn(BaseModel):
+  email:EmailStr
+  password: str
+  full_name: str
+  user_type:str
+
+  
+
+# class UserSIgnUpOut(BaseModel):
+#   email: EmailStr
+  
 class BuyerIn(BaseModel):
 
-  full_name: str
   username: str
-  email: EmailStr
-  password:str
   city : str
   country: str
   gender: str
@@ -40,6 +48,7 @@ class BuyerOut(BaseModel):
   use_venduit: str
   phone_no: str
   shopping: str
+  profile_picture: str
   user_type: str
   is_verified: bool
   created_at : datetime

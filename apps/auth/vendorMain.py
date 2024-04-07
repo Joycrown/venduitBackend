@@ -1,6 +1,6 @@
 from fastapi import  Depends,HTTPException,status,APIRouter, UploadFile
 import random
-from models.allModels import Vendors
+from models.allModels import Vendors, UserSignUp
 from schemas.vendors.vendorSchema import VendorIn, VendorOut
 from config.database import get_db
 from sqlalchemy.orm import Session 
@@ -22,43 +22,42 @@ router= APIRouter(
 Service Provider sign up
 
 """
-def generate_custom_id(prefix: str, n_digits: int) -> str:
-    """Generate a custom ID with a given prefix and a certain number of random digits"""
-    random_digits = ''.join([str(random.randint(0,9)) for i in range(n_digits)])
-    return f"{prefix}{random_digits}"
 
 
-@router.post('/vendor/signup/', status_code=status.HTTP_201_CREATED, response_model=VendorOut)
-async def new_vendor (vendor:VendorIn = Depends(), profilePicture: UploadFile = (None), logo: UploadFile = (None), db: Session = Depends(get_db)):
-    check_email= db.query(Vendors).filter(Vendors.email == vendor.email).first()
-    check_username= db.query(Vendors).filter(Vendors.username == vendor.username).first()
-    check_business_name= db.query(Vendors).filter(Vendors.business_name == vendor.business_name).first()
-    if check_email: 
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"Email already in use")
-    if check_username: 
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"username is taken")
-    if check_business_name: 
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"business name is taken")
-    hashed_password = hash(vendor.password)
-    vendor.password = hashed_password
-    custom_id = generate_custom_id("SL", 5)
-    profile_picture = await profile_picture_upload(profilePicture)
-    business_logo = await business_logo_upload(logo)
-    new_account = Vendors(vendor_id=custom_id, business_logo=business_logo, profile_picture=profile_picture, **vendor.dict())
-    db.add(new_account)
-    db.commit()
-    db.refresh(new_account)
-    await account_purchased("Registration Successful", vendor.email, {
-    "title": "Account Purchase Successful",
-    "name": vendor.full_name,
-    
-  })
-    return  new_account
+@router.post('/vendor/signup', status_code=status.HTTP_200_OK)
+async def update_vendor ( vendor: VendorIn= Depends(), 
+  file: UploadFile = (None) , db: Session = Depends(get_db), 
+  current_user: Vendors = Depends(get_current_user)):
+  check_user= db.query(Vendors).filter(Vendors.email == current_user.email).first()
+  if not check_user : 
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"User doesn't exist")
+  if current_user.user_type != "vendor":
+     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Operation not allowed for this user as a {current_user.user_type}")
+
+  existing_user = db.query(Vendors).filter(Vendors.vendor_id == current_user.vendor_id).first()
+  if not existing_user:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {current_user.vendor_id} not found")
+  
+  # Check if the provided username is already taken
+  check_username = db.query(Vendors).filter(Vendors.username == vendor.username).first()
+  
+  if check_username:
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Username is taken")
+  if file:
+    profile_picture = await profile_picture_upload(file)
+    existing_user.profile_picture = profile_picture
+
+  for field, value in vendor.dict(exclude_unset=True).items():
+    setattr(existing_user, field, value)
+  db.commit()
+  db.refresh(existing_user)
+
+  return {"message":f"User {check_user.vendor_id} is updated successfully"}
 
 """
 To fetch all users
 """
-@router.get('/vendor/',response_model=List[VendorOut])
+@router.get('/vendor',response_model=List[VendorOut])
 async def get_all_vendor( db: Session = Depends(get_db)):
   user_details = db.query(Vendors).all()
   return user_details
@@ -84,12 +83,17 @@ To delete an vendor
 @router.delete("/vendor/{vendor_id}")
 async def delete_vendor(vendor_id: str, db: Session = Depends(get_db)):
   # Check if the vendor exists
+  user = db.query(UserSignUp).filter(UserSignUp.user_id == vendor_id).first()
   vendor = db.query(Vendors).filter(Vendors.vendor_id == vendor_id).first()
-  if not vendor:
+  if not vendor and not user:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No vendor with ID: {vendor_id} found")
   
   # Delete the vendor from the database
-  db.delete(vendor)
+  if user:
+    db.delete(user)
+  if vendor:
+    db.delete(vendor)
+    
   db.commit()
 
   return {"message": f"vendor with ID: {vendor_id} deleted successfully"}
