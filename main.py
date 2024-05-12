@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from config.database import  get_db
 from models.allModels import Buyers
 from apps.auth import buyerMain, auth, vendorMain
+from apps.products import Order
 from fastapi.staticfiles import StaticFiles
 # from apps.buyers import serviceProAuth, serviceProviderMain
 # from apps.orders import orderMain, quote
@@ -27,6 +28,7 @@ app.add_middleware(
 app.include_router(buyerMain.router)
 app.include_router(auth.router)
 app.include_router(vendorMain.router)
+app.include_router(Order.router)
 # app.include_router(serviceProAuth.router)
 # app.include_router(orderMain.router)
 # app.include_router(quote.router)

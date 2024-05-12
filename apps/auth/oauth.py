@@ -1,7 +1,7 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from config.database import get_db
-from schemas.auth.authSchema import TokenData,PasswordResetTokenData
+from schemas.auth.authSchema import TokenData,PasswordResetTokenData, NonVendorSignUpTokenData
 from fastapi import Depends,HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -97,3 +97,26 @@ def create_password_reset_token(data: dict):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def create_token_signup_vendor(data:dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+
+def verify_token_signup_vendor(token:str, credentials_exception):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("email")
+        full_name = payload.get("full_name")
+        user_type = payload.get('user_type')
+        if email is None:
+            raise credentials_exception
+        return NonVendorSignUpTokenData(email=email,full_name=full_name,user_type=user_type)
+    
+    except JWTError:
+        raise credentials_exception

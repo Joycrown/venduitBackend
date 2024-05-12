@@ -4,9 +4,7 @@ from models.allModels import Vendors, UserSignUp
 from schemas.vendors.vendorSchema import VendorIn, VendorOut
 from config.database import get_db
 from sqlalchemy.orm import Session 
-from utils.users.utills import hash
 from typing import List
-from utils.users.email import account_purchased
 from .auth import get_current_user
 from utils.users.utills import profile_picture_upload, business_logo_upload
 
@@ -57,7 +55,7 @@ async def update_vendor ( vendor: VendorIn= Depends(),
 """
 To fetch all users
 """
-@router.get('/vendor',response_model=List[VendorOut])
+@router.get('/vendors',response_model=List[VendorOut])
 async def get_all_vendor( db: Session = Depends(get_db)):
   user_details = db.query(Vendors).all()
   return user_details

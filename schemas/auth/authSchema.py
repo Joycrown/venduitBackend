@@ -27,6 +27,10 @@ class PasswordResetTokenData(BaseModel):
   email: EmailStr
 
 
+class NonVendorSignUpTokenData(BaseModel):
+  email: EmailStr
+  full_name: str
+  user_type: str
 
 class CurrentUser(BaseModel):
   user_id: str

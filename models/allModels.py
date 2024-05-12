@@ -1,5 +1,5 @@
 from config.database import Base
-from sqlalchemy import Column, Enum, String,Numeric,Float,Boolean,Date,ForeignKey,JSON,LargeBinary
+from sqlalchemy import Column,String,Boolean,JSON,Integer, ForeignKey
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
@@ -71,4 +71,44 @@ class Vendors(Base):
   country = Column(String,nullable=False, server_default="N/A")
   profile_picture = Column(String, nullable=False, server_default="N/A")
   user_type = Column(String,nullable=False, server_default="vendor")
+  created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default= text('now()'))
+
+
+
+class Orders(Base):
+    __tablename__ = 'orders'
+
+    order_id = Column(String, primary_key=True, unique=True, index=True)
+    status = Column(String, nullable=False, default="Ordered")
+    is_dispute = Column(Boolean, nullable=False, default=False)
+    buyer_id = Column(String, ForeignKey("buyers.buyer_id", ondelete="CASCADE"), nullable=False)
+    buyer = relationship('Buyers')
+    vendor_id = Column(String, ForeignKey("vendors.vendor_id", ondelete="CASCADE"), nullable=True)
+    vendor = relationship('Vendors')
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default="now()")
+
+    items = relationship("OrderItem", back_populates="order")
+
+class OrderItem(Base):
+    __tablename__ = 'order_items'
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(String, ForeignKey('orders.order_id'))
+    product_name = Column(String, nullable=False)
+    product_desc = Column(String, nullable=True, default="N/A")
+    price = Column(String, nullable=False)
+    product_image = Column(String, nullable=False, default="N/A")
+
+    order = relationship("Orders", back_populates="items")
+
+class Disputes(Base):
+  __tablename__ = 'disputes'
+
+  dispute_id = Column(String, unique=True,primary_key=True, nullable=False)
+  dispute_category = Column(String, nullable=False)
+  dispute_desc = Column(String, nullable=True, server_default="N/A")
+  status = Column(String, nullable=False, server_default="N/A")
+  dispute_image = Column(String, nullable=False, server_default="N/A")
+  order_id  = Column(String,ForeignKey("orders.order_id",ondelete="CASCADE"), nullable=False)
+  order= relationship('Orders')
   created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default= text('now()'))

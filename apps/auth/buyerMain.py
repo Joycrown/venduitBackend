@@ -5,8 +5,6 @@ from schemas.buyers.buyerSchema import BuyerIn, BuyerOut, UserSignUpIn
 from utils.users.utills import profile_picture_upload
 from config.database import get_db
 from sqlalchemy.orm import Session 
-from utils.users.utills import hash
-from utils.users.email import account_purchased
 from typing import List
 from .oauth import get_current_user
 
@@ -46,10 +44,12 @@ async def update_buyer ( buyer: BuyerIn= Depends(),
   check_username= db.query(Buyers).filter(Buyers.username == buyer.username).first()
   if check_username : 
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail=f"Username is taken")
-  profile_picture = await profile_picture_upload(file)
+  if file:
+      profile_picture = await profile_picture_upload(file)
+      existing_user.profile_picture = profile_picture
 
-  existing_user.profile_picture = profile_picture
-  for field, value in buyer.dict().items():
+  
+  for field, value in buyer.dict(exclude_unset=True).items():
     setattr(existing_user, field, value)
   db.commit()
   db.refresh(existing_user)

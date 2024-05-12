@@ -1,2 +1,3 @@
 delete a product with the product image
 username should be matched in all cases lower or upcases
+mail messages for product order

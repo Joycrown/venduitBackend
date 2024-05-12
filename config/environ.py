@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     local_server_host :str
     production_server : str 
     production_server_host : str 
+    flw_public_key :str
+    rave_secret_key :str
     
     class Config:
         env_file= ".env"

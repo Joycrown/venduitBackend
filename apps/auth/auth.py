@@ -4,10 +4,10 @@ from sqlalchemy.orm import Session
 from config.database import get_db
 from models.allModels import Buyers, Vendors, UserSignUp
 from utils.users.utills import verify, hash
-from apps.auth.oauth import get_current_user, create_password_reset_token, create_tokens, verify_refresh_token,verify_access_token_password_reset
+from apps.auth.oauth import get_current_user, create_password_reset_token, create_tokens, verify_refresh_token,verify_access_token_password_reset,verify_token_signup_vendor
 from schemas.buyers.buyerSchema import BuyerOut, UserSignUpIn
 from schemas.vendors.vendorSchema import VendorOut
-from utils.users.email import password_rest_email, account_purchased
+from utils.users.email import password_rest_email, successful_signup
 from schemas.auth.authSchema import UpdatePassword, EmailReset,ResetPassword
 from typing import Annotated, Union
 import random
@@ -64,7 +64,7 @@ async def create_new_user(data : UserSignUpIn , db:Session=Depends(get_db)):
   db.add(user)
   db.commit()
   db.refresh(user)
-  await account_purchased("Registration Successful", data.email, {
+  await successful_signup("Registration Successful", data.email, {
   "title": "Sign up Successful",
   "name": data.full_name,
   
@@ -227,3 +227,24 @@ async def password(data: ResetPassword, db: Session = Depends(get_db)):
     user.password = hash(data.new_password)
     db.commit()
     return {"message": "Password reset successful"}
+
+
+
+"""
+Non vendor signup invite route
+Send an invitation link for non vendors
+
+"""
+
+@router.post('/create/vendor_signup', status_code =status.HTTP_201_CREATED)
+async def create_new_vendor(token:str , db:Session=Depends(get_db)):
+  credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+  data = verify_token_signup_vendor(token,credentials_exception )
+ 
+  return data
+  
+  

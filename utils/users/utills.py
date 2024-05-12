@@ -74,3 +74,27 @@ async def business_logo_upload(file):
     file_url = server_host + generated_name[1:]
     return file_url
 
+
+
+async def product_image_upload(file):
+    FILEPATH = "./static/productImages/"
+    filename = file.filename
+    extension =filename.split(".")[1]
+    if extension not in [ 'jpg', 'jpeg','png']:
+        raise ValueError("Invalid image type")
+    token_name = secrets.token_hex(10)+'.'+extension
+    generated_name = FILEPATH + token_name
+    file_content = await file.read()
+    with open(generated_name,'wb') as file:
+        file.write(file_content)
+    img = Image.open(generated_name)
+    # Resize the image to be no wider than 192 pixels or no higher than 192 pixels. 
+    img =img.resize(size=((250,250)))
+    
+    # Save the image as a jpeg at quality of 95 under that size 
+    img.save(generated_name,quality=150)
+    file.close()
+    
+    file_url = server_host + generated_name[1:]
+    return file_url
+
