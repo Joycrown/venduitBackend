@@ -11,7 +11,7 @@ from utils.users.email import password_rest_email, successful_signup
 from schemas.auth.authSchema import UpdatePassword, EmailReset,ResetPassword
 from typing import Union
 import random
-
+import string
 
 
 router = APIRouter(
@@ -43,6 +43,7 @@ async def create_new_user(data : UserSignUpIn , db:Session=Depends(get_db)):
     # Define buyer and vendor variables
   buyer = None
   vendor = None
+  
   if data.user_type == "buyer":
     custom_id = generate_custom_id("BU",7)
     social_media_platform = ["none"]
@@ -50,7 +51,7 @@ async def create_new_user(data : UserSignUpIn , db:Session=Depends(get_db)):
   elif  data.user_type == "vendor":
     custom_id = generate_custom_id("VN",7)
     business_social_links = ["none"]
-    vendor = Vendors(vendor_id=custom_id,business_social_links = business_social_links, **data.dict())
+    vendor = Vendors(vendor_id=custom_id, business_social_links = business_social_links, **data.dict())
   else :
     raise HTTPException(status_code=400, detail="Pls select a corresponding user type")
   user = UserSignUp(user_id=custom_id, **data.dict())
@@ -66,12 +67,9 @@ async def create_new_user(data : UserSignUpIn , db:Session=Depends(get_db)):
   await successful_signup("Registration Successful", data.email, {
   "title": "Sign up Successful",
   "name": data.full_name,
-  
 })
 
   return {"message": "Account Created Successfully"}
-
-
 
 
 

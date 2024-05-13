@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     email_server: str
     local_server_host :str
     production_server : str 
-    production_server_host : str 
+   
     
     
     class Config:
