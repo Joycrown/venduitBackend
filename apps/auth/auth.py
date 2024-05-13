@@ -9,9 +9,8 @@ from schemas.buyers.buyerSchema import BuyerOut, UserSignUpIn
 from schemas.vendors.vendorSchema import VendorOut
 from utils.users.email import password_rest_email, successful_signup
 from schemas.auth.authSchema import UpdatePassword, EmailReset,ResetPassword
-from typing import Annotated, Union
+from typing import Union
 import random
-
 
 
 
