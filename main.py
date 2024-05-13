@@ -2,12 +2,10 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from config.database import  get_db
-from models.allModels import Buyers
 from apps.auth import buyerMain, auth, vendorMain
 from apps.products import Order
 from fastapi.staticfiles import StaticFiles
-# from apps.buyers import serviceProAuth, serviceProviderMain
-# from apps.orders import orderMain, quote
+
 
 
 
