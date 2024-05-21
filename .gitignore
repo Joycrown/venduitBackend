@@ -1,2 +1,5 @@
 .env
 .bug.txt
+env/
+stagingBackend/
+__pycache__/
