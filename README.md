@@ -22,7 +22,7 @@ Install the dependencies
 pip install -r requirements.txt
 ```
 
-Make sure you have postgresql installed and activated, and create a `venduit` table. 
+Make sure you have postgresql installed and activated, and create a `venduit` database. 
 
 Migrate the database schema with alembic
 

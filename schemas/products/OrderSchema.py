@@ -24,7 +24,11 @@ class CreateOrderNonVenduit(BaseModel):
   quantity : int
   price : str
 
-
+class OrderSummaryOut(BaseModel):
+    vendor_name: str
+    status: str
+    price: float
+    order_id: str
 
 class OrderItemOut(BaseModel):
   order_id : str
