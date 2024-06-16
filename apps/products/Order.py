@@ -2,7 +2,7 @@ from fastapi import  Depends,HTTPException,status,APIRouter,UploadFile,File, For
 import random
 from models.allModels import Orders,Vendors,OrderItem
 from schemas.buyers.buyerSchema import BuyerIn, BuyerOut, UserSignUpIn
-from schemas.products.OrderSchema import  CreateOrderNonVenduit,ProductSchema, OrderRequest,OrderOut,OrderItemOut
+from schemas.products.OrderSchema import  CreateOrderNonVenduit,ProductSchema, OrderRequest,OrderOut, OrderItemOut, OrderSummaryOut
 from utils.users.utills import product_image_upload
 from config.database import get_db
 from sqlalchemy.orm import Session 
@@ -138,3 +138,26 @@ async def create_order_non_vendor (vendor_full_name : str, order: CreateOrderNon
   "link": link
 })
   return {"message":"Order Created", "order":order, "link": link}
+
+
+
+"""
+Getting the vendor name and the price of an order to render as a transaction in the frontend
+"""
+@router.get('/get_orders', response_model=List[OrderSummaryOut], status_code=status.HTTP_200_OK)
+async def get_orders(db: Session = Depends(get_db), current_user: BuyerOut = Depends(get_current_user)):
+    if current_user.user_type != 'buyer':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only buyers can get the list of transactions")
+
+    # Joining Orders with Vendors and OrderItems and filtering by buyer_id
+    orders = db.query(Orders.order_id, Orders.status, Vendors.full_name, OrderItem.price).\
+                join(Vendors, Vendors.vendor_id == Orders.vendor_id).\
+                join(OrderItem, OrderItem.order_id == Orders.order_id).\
+                filter(Orders.buyer_id == current_user.buyer_id).\
+                all()
+
+    # Transforming data into the desired output format
+    results = [{"vendor_name": vendor_name, "status": status, "price": price, "order_id": order_id} for order_id, status, vendor_name, price in orders]
+    
+    # Return the results directly, an empty list will be returned if no orders are found
+    return results
