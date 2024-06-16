@@ -5,7 +5,7 @@ from schemas.buyers.buyerSchema import BuyerIn, BuyerOut, UserSignUpIn
 from schemas.products.OrderSchema import  CreateOrderNonVenduit,ProductSchema, OrderRequest,OrderOut,OrderItemOut
 from utils.users.utills import product_image_upload
 from config.database import get_db
-from sqlalchemy.orm import Session 
+from sqlalchemy.orm import Session
 from apps.auth.oauth import create_token_signup_vendor
 from utils.users.email import order_created_buyer,order_created_vendor_nonVenduit,order_created_vendor_venduit
 from typing import List, Optional,Annotated

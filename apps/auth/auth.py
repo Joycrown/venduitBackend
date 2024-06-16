@@ -11,7 +11,7 @@ from utils.users.email import password_rest_email, successful_signup
 from schemas.auth.authSchema import UpdatePassword, EmailReset,ResetPassword
 from typing import Union
 import random
-import string
+
 
 
 router = APIRouter(
@@ -86,6 +86,8 @@ def login(
     # Check if the login details belong to a user
     user = db.query(UserSignUp).filter(UserSignUp.email == details.username).first()
     if not user:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    if not verify(details.password, user.password):
       raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     # user_type = user.user_type
 

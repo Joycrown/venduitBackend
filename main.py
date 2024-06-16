@@ -9,7 +9,12 @@ from fastapi.staticfiles import StaticFiles
 
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Venduit APIs ",
+    description="This is a custom API documentation for venduit. An online vendor store",
+    version="1.0.0",
+    
+)
 
 
 origins = ["*"]
@@ -27,9 +32,7 @@ app.include_router(buyerMain.router)
 app.include_router(auth.router)
 app.include_router(vendorMain.router)
 app.include_router(Order.router)
-# app.include_router(serviceProAuth.router)
-# app.include_router(orderMain.router)
-# app.include_router(quote.router)
+
 
 @app.get("/")
 async def root():
