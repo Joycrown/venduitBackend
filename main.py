@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from config.database import  get_db
 from apps.auth import buyerMain, auth, vendorMain
-from apps.products import Order
+from apps.products import Order, store
+from apps.buyers import buyerOperation
 from fastapi.staticfiles import StaticFiles
 
 
@@ -32,6 +33,8 @@ app.include_router(buyerMain.router)
 app.include_router(auth.router)
 app.include_router(vendorMain.router)
 app.include_router(Order.router)
+app.include_router(store.router)
+app.include_router(buyerOperation.router)
 
 
 @app.get("/")
@@ -41,7 +44,6 @@ async def root():
 
 @app.get('/testing')
 def test_db(db: Session = Depends(get_db)):
-  # user= db.query(Users).all()
   return {"message": "Database is connected"}
 
 

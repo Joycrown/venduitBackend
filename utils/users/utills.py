@@ -40,7 +40,7 @@ async def profile_picture_upload(file):
         file.write(file_content)
     img = Image.open(generated_name)
     # Resize the image to be no wider than 192 pixels or no higher than 192 pixels. 
-    img =img.resize(size=((250,250)))
+    img = img.resize(size=(250, 250))
     
     # Save the image as a jpeg at quality of 95 under that size 
     img.save(generated_name,quality=150)
@@ -65,7 +65,7 @@ async def business_logo_upload(file):
         file.write(file_content)
     img = Image.open(generated_name)
     # Resize the image to be no wider than 192 pixels or no higher than 192 pixels. 
-    img =img.resize(size=((250,250)))
+    img = img.resize(size=(250, 250))
     
     # Save the image as a jpeg at quality of 95 under that size 
     img.save(generated_name,quality=150)
@@ -89,7 +89,7 @@ async def product_image_upload(file):
         file.write(file_content)
     img = Image.open(generated_name)
     # Resize the image to be no wider than 192 pixels or no higher than 192 pixels. 
-    img =img.resize(size=((250,250)))
+    img = img.resize(size=(250, 250))
     
     # Save the image as a jpeg at quality of 95 under that size 
     img.save(generated_name,quality=150)

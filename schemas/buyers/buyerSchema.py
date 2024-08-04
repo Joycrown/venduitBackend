@@ -13,8 +13,6 @@ class  UserSignUpIn(BaseModel):
 
   
 
-# class UserSIgnUpOut(BaseModel):
-#   email: EmailStr
   
 class BuyerIn(BaseModel):
 

@@ -1,5 +1,5 @@
 from config.database import Base
-from sqlalchemy import Column,String,Boolean,JSON,Integer, ForeignKey
+from sqlalchemy import Column,String,Boolean,JSON,Integer, ForeignKey, Float
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
@@ -67,39 +67,43 @@ class Vendors(Base):
   business_logo = Column(String,nullable=False,server_default="N/A")
   is_scammed = Column (String, nullable=False, server_default="N/A")
   use_venduit = Column (String, nullable=False, server_default="N/A")
-  is_verified = Column (Boolean,nullable=False, default=False)
+  store_name = Column (String, ForeignKey("stores.store_name", ondelete="CASCADE"), nullable=True)
+  is_verified = Column (Boolean, nullable=False, default=False)
   country = Column(String,nullable=False, server_default="N/A")
   profile_picture = Column(String, nullable=False, server_default="N/A")
   user_type = Column(String,nullable=False, server_default="vendor")
   created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default= text('now()'))
-
+  store = relationship("Store", foreign_keys=[store_name])
 
 
 class Orders(Base):
-    __tablename__ = 'orders'
+  __tablename__ = 'orders'
 
-    order_id = Column(String, primary_key=True, unique=True, index=True)
-    status = Column(String, nullable=False, default="Ordered")
-    is_dispute = Column(Boolean, nullable=False, default=False)
-    buyer_id = Column(String, ForeignKey("buyers.buyer_id", ondelete="CASCADE"), nullable=False)
-    buyer = relationship('Buyers')
-    vendor_id = Column(String, ForeignKey("vendors.vendor_id", ondelete="CASCADE"), nullable=True)
-    vendor = relationship('Vendors')
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default="now()")
+  order_id = Column(String, primary_key=True, unique=True, index=True)
+  status = Column(String, nullable=False, default="Ordered")
+  is_dispute = Column(Boolean, nullable=False, default=False)
+  buyer_id = Column(String, ForeignKey("buyers.buyer_id", ondelete="CASCADE"), nullable=False)
+  buyer = relationship('Buyers')
+  vendor_id = Column(String, ForeignKey("vendors.vendor_id", ondelete="CASCADE"), nullable=True)
+  vendor = relationship('Vendors')
+  created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default="now()")
 
-    items = relationship("OrderItem", back_populates="order")
+  items = relationship("OrderItem", back_populates="order")
+
 
 class OrderItem(Base):
-    __tablename__ = 'order_items'
+  __tablename__ = 'order_items'
 
-    id = Column(Integer, primary_key=True, index=True)
-    order_id = Column(String, ForeignKey('orders.order_id'))
-    product_name = Column(String, nullable=False)
-    product_desc = Column(String, nullable=True, default="N/A")
-    price = Column(String, nullable=False)
-    product_image = Column(String, nullable=False, default="N/A")
+  id = Column(Integer, primary_key=True, index=True)
+  order_id = Column(String, ForeignKey('orders.order_id'))
+  product_name = Column(String, nullable=False)
+  product_desc = Column(String, nullable=True, default="N/A")
+  price = Column(String, nullable=False)
+  product_image = Column(String, nullable=False, default="N/A")
 
-    order = relationship("Orders", back_populates="items")
+  order = relationship("Orders", back_populates="items")
+
+
 
 class Disputes(Base):
   __tablename__ = 'disputes'
@@ -110,5 +114,40 @@ class Disputes(Base):
   status = Column(String, nullable=False, server_default="N/A")
   dispute_image = Column(String, nullable=False, server_default="N/A")
   order_id  = Column(String,ForeignKey("orders.order_id",ondelete="CASCADE"), nullable=False)
-  order= relationship('Orders')
+  order= relationship('Orders',foreign_keys=[order_id])
   created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default= text('now()'))
+
+
+
+class Store(Base):
+  __tablename__ = 'stores'
+
+  id = Column(Integer, primary_key=True, unique=True, index=True)
+  store_name = Column(String, unique=True, nullable=False)
+  vendor_id = Column(String, ForeignKey('vendors.vendor_id'))
+  vendor = relationship("Vendors", foreign_keys=[vendor_id])
+  product_id = Column(Integer, ForeignKey('products.id'))
+  store_product = relationship("Product",foreign_keys=[product_id])
+
+
+
+
+class Product(Base):
+  __tablename__ = 'products'
+
+  id = Column(Integer, primary_key=True,unique=True, index=True)
+  product_name = Column(String, unique=True, nullable=False)
+  product_description = Column(String, nullable=False)
+  product_price = Column(Integer, nullable=False)
+  store_name = Column(String, ForeignKey('stores.store_name'))
+ 
+
+
+
+class Rating(Base):
+  __tablename__ = 'ratings'
+
+  id = Column(Integer, primary_key=True,unique=True, index=True)
+  value = Column(Float, nullable=False, default=0.0)
+  vendor_id = Column(String, ForeignKey('vendors.vendor_id'))
+  vendor = relationship("Vendors", foreign_keys=[vendor_id])

@@ -8,7 +8,6 @@ from pydantic import BaseModel, EmailStr
 
 class VendorIn(BaseModel):
 
-
   username: str
   city : str
   country: str
@@ -24,7 +23,7 @@ class VendorIn(BaseModel):
   business_social_links: List[str]
   business_startDate: str
  
-  
+
   
 
 class VendorOut(BaseModel):
@@ -48,6 +47,7 @@ class VendorOut(BaseModel):
   business_social_links: List[str]
   profile_picture: str
   business_startDate: str
+  store_name : str
   created_at : datetime
 
 

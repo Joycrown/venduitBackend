@@ -15,7 +15,7 @@ import random
 
 
 router = APIRouter(
-    tags=["Users Auth"]
+    tags=["General Auth"]
 )
 
 
@@ -23,7 +23,7 @@ router = APIRouter(
 
 def generate_custom_id(prefix: str, n_digits: int) -> str:
     """Generate a custom ID with a given prefix and a certain number of random digits"""
-    random_digits = ''.join([str(random.randint(0,9)) for i in range(n_digits)])
+    random_digits = ''.join([str(random.randint(0,9)) for _ in range(n_digits)])
     return f"{prefix}{random_digits}"
 
 
@@ -89,7 +89,7 @@ def login(
       raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if not verify(details.password, user.password):
       raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    # user_type = user.user_type
+ 
 
     # Create tokens based on user type
     access_token, refresh_token = create_tokens(user)
@@ -110,11 +110,11 @@ def refresh_token(
 ):
     token_data = verify_refresh_token(refresh_token)
     user_id = token_data.id
-    email = token_data.email
+    
 
     # Check if the token belongs to a user
     user = db.query(UserSignUp).filter(UserSignUp.user_id == user_id).first()
-    # user_type = "buyer"
+   
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     

@@ -1,2 +1,7 @@
 .env
 .bug.txt
+env/
+stagingBackend/
+__pycache__/
+instructions.txt
+alembic
