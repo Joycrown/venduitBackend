@@ -76,7 +76,7 @@ async def find_product_from_store (search: Optional[str] = Query(None, title="Se
     else:
       find_product = db.query(Product).filter(Product.store_name==store.store_name).all()
       if not find_product:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"No product in store")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No product in store")
     return find_product
   except Exception as e:
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) 

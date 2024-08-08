@@ -55,7 +55,7 @@ def create_order_items(db: Session, order_id: str, product_data: List[dict]):
     db.commit()
     return order_items
 
-async def notify_users(order_id: str, buyer_email: str, buyer_name: str, vendor_email: str, vendor_name: str):
+async def notify_users(buyer_email: str, buyer_name: str, vendor_email: str, vendor_name: str):
     await order_created_buyer("Order and Payment created Successfully", buyer_email, {
         "title": "Payment Successfully made",
         "name": buyer_name,
@@ -125,53 +125,65 @@ async def create_order_vendor(
 Creating an order or payment request by the buyer to a vendor not venduit
 """
 @router.post('/create_order_non_venduit', status_code=status.HTTP_201_CREATED)
-async def create_order_non_vendor (vendor_full_name : str, order: CreateOrderNonVenduit= Depends(), 
-  vendor_email: EmailStr =(None), vendor_phone_no: str=(None), product_desc: str=(None),
-  file: UploadFile = (None), db:Session=Depends(get_db),
-  current_user: BuyerOut = Depends(get_current_user)):
-  if current_user.user_type != 'buyer':
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="only a buyer a can create an order")
-  if vendor_email:
-    find_vendor = db.query(Vendors).filter(Vendors.email==vendor_email).first()
-    if find_vendor:
-      raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="The vendor with the mail exist already.")
-  custom_id = generate_custom_id("TR",7)
-  #check if either email or phone is present  else set it as none
-  if not (vendor_email or vendor_phone_no):
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No Vendor contact included")
-  if file:
-    product_picture = await product_image_upload(file)
-  product_picture ="none"
+async def create_order_non_vendor(
+    vendor_full_name: str,
+    order: CreateOrderNonVenduit = Depends(),
+    vendor_email: EmailStr = None,
+    vendor_phone_no: str = None,
+    product_desc: str = None,
+    file: UploadFile = None,
+    db: Session = Depends(get_db),
+    current_user: BuyerOut = Depends(get_current_user)
+):
+    if current_user.user_type != 'buyer':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only a buyer can create an order")
+    
+    if vendor_email:
+        find_vendor = db.query(Vendors).filter(Vendors.email == vendor_email).first()
+        if find_vendor:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The vendor with the email already exists.")
+    
+    custom_id = generate_custom_id("TR", 7)
+    
+    # Check if either email or phone is present, else raise an exception
+    if not (vendor_email or vendor_phone_no):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No vendor contact included")
+    
+    product_picture = await product_image_upload(file) if file else "none"
 
-  if vendor_email:
-    vendor_email = vendor_email
-  if vendor_full_name:
-    vendor_name = vendor_full_name
-  if vendor_phone_no:
-    vendor_phone_no = vendor_phone_no
-  if not product_desc:
-    product_desc = order.product_name
+    if not product_desc:
+        product_desc = order.product_name
 
-  token = create_token_signup_vendor(data={"email": vendor_email, "full_name":vendor_full_name ,"user_type": "vendor"})
-  link = f'http://localhost:5173/create_vendors/{token}'
-  order = Orders(order_id=custom_id, buyer_id=current_user.buyer_id,
-  product_image=product_picture, product_desc=product_desc, **order.dict())
-  db.add(order)
-  db.commit()
-  db.refresh(order)
-  await order_created_buyer("Order and Payment created Successful", current_user.email, {
-  "title": "Payment Successfully made",
-  "name": current_user.full_name,
-})
-  await order_created_vendor_nonVenduit("You have a new payment/order from Venduit", vendor_email, {
-  "title": "New Payment",
-  "name": vendor_name,
-  "product_name": order.product_name,
-  "product_desc": order.product_desc,
-  "price": order.price,
-  "link": link
-})
-  return {"message":"Order Created", "order":order, "link": link}
+    token = create_token_signup_vendor(data={"email": vendor_email, "full_name": vendor_full_name, "user_type": "vendor"})
+    link = f'http://localhost:5173/create_vendors/{token}'
+    
+    new_order = Orders(
+        order_id=custom_id,
+        buyer_id=current_user.buyer_id,
+        product_image=product_picture,
+        product_desc=product_desc,
+        **order.dict()
+    )
+    db.add(new_order)
+    db.commit()
+    db.refresh(new_order)
+    
+    await order_created_buyer("Order and Payment created successfully", current_user.email, {
+        "title": "Payment Successfully made",
+        "name": current_user.full_name,
+    })
+    
+    await order_created_vendor_nonVenduit("You have a new payment/order from Venduit", vendor_email, {
+        "title": "New Payment",
+        "name": vendor_full_name,
+        "product_name": new_order.product_name,
+        "product_desc": new_order.product_desc,
+        "price": new_order.price,
+        "link": link
+    })
+    
+    return {"message": "Order Created", "order": new_order, "link": link}
+
 
 
 
